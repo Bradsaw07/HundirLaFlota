@@ -6,8 +6,7 @@ def MenuHundirFlota():
             print("Bienvenidos al juego de estrategia \n ----------- Hundir La Flota  --------------")
             print("--------------------------")
             print("1. Iniciar juego")
-            print("2. Reiniciar")
-            print("3. Salir")
+            print("2. Salir")
             print("--------------------------")
             opcion = int(input("Ingrese la opcion que desee: "))
             if opcion == 1 :
@@ -15,9 +14,6 @@ def MenuHundirFlota():
                 print(f"Has seleccionado la opcion {opcion}")
                 HundirLaFlota(nombreId)# carga el juego
             elif opcion == 2:
-                print(f"Has seleccionado la opcion {opcion}")
-                #ReiniciarTablero() reiniciar tablero
-            elif opcion == 3:
                 print(f"Has seleccionado la opcion {opcion} Salir")
                 print("Has salido  del juego")
 
