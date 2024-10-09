@@ -1,98 +1,270 @@
 import random
+import string
+import tkinter as tk
 from Barcos import *
 
 class Tablero:
-    def __init__(self, filas,columnas):
+    def __init__(self, filas, columnas):
         self.filas = filas
         self.columnas = columnas
-        self.casillas =  [[None for _ in range(columnas)] for _ in range(filas)]
-
-def cargarBarcos(dificultad, nombreId,barco_jugador):
+        self.casillas = [["." for _ in range(columnas)] for _ in range(filas)]
+        self.coordenadas_atacadas = []
     
-    if dificultad == 1:
-        tablero = Tablero(10, 10)
-        tamaño_barcos = 3
-    elif dificultad == 2:
-        tablero = Tablero(20, 20)
-        tamaño_barcos = 4
-    elif dificultad == 3:
-        tablero = Tablero(30, 30)
-        tamaño_barcos = 5
-    else:
-        print(f"La dificultad elegida no es válida {dificultad}")
-        return None
+    def generar_tableros(self, dificultad):
+        if dificultad == 1:
+            tablero_jugador = Tablero(10, 10)
+            tablero_rival = Tablero(10, 10)
+        elif dificultad == 2:
+            tablero_jugador = Tablero(15, 15)
+            tablero_rival = Tablero(15, 15)
+        elif dificultad == 3:
+            tablero_jugador = Tablero(20, 20)
+            tablero_rival = Tablero(20, 20)
 
+        return tablero_jugador, tablero_rival
 
-    for _ in range(5):  # Cargar 5 barcos
-        orientacion = random.randint(0, 1)  # 0 = horizontal, 1 = vertical
-        if orientacion == 0:  # Horizontal
-            fila = random.randint(0, tablero.filas - 1)
-            columna = random.randint(0, tablero.columnas - tamaño_barcos)
-        else:  # Vertical
-            fila = random.randint(0, tablero.filas - tamaño_barcos)
-            columna = random.randint(0, tablero.columnas - 1)
+    def cargar_barcos(self, barcos, mostrar_barcos=False):
+        for barco in barcos:
+            for fila, columna in barco.posiciones:
+                if mostrar_barcos:
+                    self.casillas[fila][columna] = "B"
+                else:
+                    self.casillas[fila][columna] = "."
 
-        barco = Barco(tamaño_barcos, orientacion, fila, columna)
-        barco_jugador.append(barco)
+    def atacar(self, fila, columna, barcos_rival, mostrar_barcos=False):
+        if fila < 0 or fila >= self.filas or columna < 0 or columna >= self.columnas:
+            print("Coordenada fuera del tablero")
+            return False
+        if (fila, columna) in self.coordenadas_atacadas:
+            print("Coordenada ya atacada")
+            return False
+        self.coordenadas_atacadas.append((fila, columna))
+        for barco in barcos_rival:
+            if (fila, columna) in barco.posiciones:
+                self.casillas[fila][columna] = "X"
+                if mostrar_barcos:
+                    print("¡Barco hundido!")
+                if all((fila, columna) in self.coordenadas_atacadas for fila, columna in barco.posiciones):
+                    print("¡Barco completamente hundido!")
+                    barcos_rival.remove(barco)
+                return True
+        self.casillas[fila][columna] = "."
+        print("¡Disparo fallido!")
+        return False
+    
+    def atacar_normal(self, fila, columna, barcos_rival, mostrar_barcos=False):
+        if fila < 0 or fila >= self.filas or columna < 0 or columna >= self.columnas:
+            print("Coordenada fuera del tablero")
+            return False
+        if (fila, columna) in self.coordenadas_atacadas:
+            print("Coordenada ya atacada")
+            return False
+        self.coordenadas_atacadas.append((fila, columna))
+        for barco in barcos_rival:
+            if (fila, columna) in barco.posiciones:
+                self.casillas[fila][columna] = "X"
+                if mostrar_barcos:
+                    print("¡Barco hundido!")
+                if all((fila, columna) in self.coordenadas_atacadas for fila, columna in barco.posiciones):
+                    print("¡Barco completamente hundido!")
+                    barcos_rival.remove(barco)
+                return True
+        self.casillas[fila][columna] = "A"
+        print("¡Disparo fallido!")
+        return False
 
-        for i in range(tamaño_barcos):
-            if orientacion == 0:  # Horizontal
-                tablero.casillas[fila][columna + i] = barco
-            else:  # Vertical
-                tablero.casillas[fila + i][columna] = barco
+    def atacar_dificil(self, fila, columna, barcos_rival, mostrar_barcos=False):
+        if fila < 0 or fila >= self.filas or columna < 0 or columna >= self.columnas:
+            print("Coordenada fuera del tablero")
+            return False
+        if (fila, columna) in self.coordenadas_atacadas:
+            print("Coordenada ya atacada")
+            return False
+        self.coordenadas_atacadas.append((fila, columna))
+        for barco in barcos_rival:
+            if (fila, columna) in barco.posiciones:
+                self.casillas[fila][columna] = "X"
+                if mostrar_barcos:
+                    print("¡Barco hundido!")
+                if all((fila, columna) in self.coordenadas_atacadas for fila, columna in barco.posiciones):
+                    print("¡Barco completamente hundido!")
+                    barcos_rival.remove(barco)
+                return True
+        self.casillas[fila][columna] = "A"
+        print("¡Disparo fallido!")
+        return False
 
-    # Visualizar el tablero con los encabezados y el nombre del jugador
-    print(f"Tablero de {nombreId}:")
-    encabezado_columnas = '   ' + ' '.join(str(i + 1) for i in range(tablero.columnas))
-    print(encabezado_columnas)
-    for i, fila in enumerate(tablero.casillas):
-        print(chr(65 + i), ' '.join(['B' if casilla else '.' for casilla in fila]))
+    def imprimir_tablero(self):
+        print("  ", end="")
+        for i in range(self.columnas):
+            print(i, end=" ")
+        print()
+        for i, fila in enumerate(self.casillas):
+            print(i, end=" ")
+            for casilla in fila:
+                print(casilla, end=" ")
+            print()
 
-    return tablero, barco_jugador
+    def imprimir_tablero_con_letras(self):
+        print("  ", end="")
+        for i in range(self.columnas):
+            print(string.ascii_uppercase[i], end=" ")
+        print()
+        for i, fila in enumerate(self.casillas):
+            print(i, end=" ")
+            for casilla in fila:
+                print(casilla, end=" ")
+            print() 
+def mostrar_ventana_ganador_easy():
+        ventana = tk.Tk()
+        ventana.title("Felicidadees,¡Has ganadoooo!")
+        imagen_ganador = tk.PhotoImage(file="HundirLaFlota\Imagenes\Winner.png")
+        label_imagen = tk.Label(ventana,image=imagen_ganador)
+        label_imagen.pack()
+        ventana.mainloop()
+        
+def mostrar_ventana_perdedor_easy():
+        ventana = tk.Tk()
+        ventana.title("¡Has perdido!")
+        imagen_perdedor = tk.PhotoImage(file="HundirLaFlota\Imagenes\Loser.png")
+        label_imagen = tk.Label(ventana, image=imagen_perdedor)
+        label_imagen.pack()
+        ventana.mainloop()
+        
 
-def cargarTableroMaquina(dificultad,tablero_maquina,barcos_maquina, mostrar_barcos):
-    if dificultad == 1:
-        tablero_maquina = Tablero(10, 10)
-        tamaño_barcos = 3
-    elif dificultad == 2:
-        tablero_maquina = Tablero(20, 20)
-        tamaño_barcos = 4
-    elif dificultad == 3:
-        tablero_maquina = Tablero(30, 30)
-        tamaño_barcos = 5
-    else:
-        print(f"La dificultad elegida no es válida {dificultad}")
-        return None
+def jugar(dificultad,nombreId):
+        tablero_jugador, tablero_rival = Tablero(0, 0).generar_tableros(dificultad)
+        barcos_jugador = Barco.crear_barcos(6, 3, "horizontal", tablero_jugador.filas, tablero_jugador.columnas)
+        barcos_rival = Barco.crear_barcos(6, 3, "horizontal", tablero_rival.filas, tablero_rival.columnas)
+        tablero_jugador.cargar_barcos(barcos_jugador)
+        tablero_rival.cargar_barcos(barcos_rival, mostrar_barcos=True)
+        while True:
+            print(f"Tablero del jugador: {nombreId}")
+            tablero_jugador.imprimir_tablero_con_letras()
+            print("Tablero del rival:")
+            tablero_rival.imprimir_tablero_con_letras()
+            while True:
+                fila = int(input("Ingrese la fila: "))
+                columna = int(input("Ingrese la columna: "))
+                if tablero_rival.atacar(fila, columna, barcos_rival):
+                    print("¡Disparo acertado!")
+                    if not barcos_rival:
+                        print("¡Has ganado!")
+                        mostrar_ventana_ganador_easy()
+                        return
+                else:
+                    print("¡Disparo fallido!")
+                    break
+            # Turno de la máquina
+            while True:
+                fila_maquina = random.randint(0, tablero_jugador.filas - 1)
+                columna_maquina = random.randint(0, tablero_jugador.columnas - 1)
+                if tablero_jugador.atacar(fila_maquina, columna_maquina, barcos_jugador):
+                    print("¡La máquina ha acertado!")
+                    if not barcos_jugador:
+                        print("¡Has perdido!")
+                        mostrar_ventana_perdedor_easy()
+                        return
+                else:
+                    print("¡La máquina ha fallado!")
+                    break
 
-    for _ in range(5):  # Cargar 5 barcos
-        orientacion = random.randint(0, 1)  # 0 = horizontal, 1 = vertical
-        if orientacion == 0:  # Horizontal
-            fila = random.randint(0, tablero_maquina.filas - 1)
-            columna = random.randint(0, tablero_maquina.columnas - tamaño_barcos)
-        else:  # Vertical
-            fila = random.randint(0, tablero_maquina.filas - tamaño_barcos)
-            columna = random.randint(0, tablero_maquina.columnas - 1)
+def jugar_normal(dificultad, nombreId):
+        tablero_jugador, tablero_rival = Tablero(0, 0).generar_tableros(dificultad)
+        barcos_jugador = Barco.crear_barcos(5, 3, "horizontal", tablero_jugador.filas, tablero_jugador.columnas)
+        barcos_rival = Barco.crear_barcos(5, 3, "horizontal", tablero_rival.filas, tablero_rival.columnas)
+        tablero_jugador.cargar_barcos(barcos_jugador)
+        tablero_rival.cargar_barcos(barcos_rival, mostrar_barcos=True)
+        while True:
+            print(f"Tablero del jugador: {nombreId}")
+            tablero_jugador.imprimir_tablero_con_letras()
+            print("Tablero del rival:")
+            tablero_rival.imprimir_tablero_con_letras()
+            while True:
+                fila = int(input("Ingrese la fila: "))
+                columna = int(input("Ingrese la columna: "))
+                if tablero_rival.atacar_normal(fila, columna, barcos_rival):
+                    print("¡Disparo acertado!")
+                    if not barcos_rival:
+                        print("¡Has ganado!")
+                        return
+                else:
+                    print("¡Disparo fallido!")
+                    break
+            # Turno de la máquina
+            while True:
+                fila_maquina = random.randint(0, tablero_jugador.filas - 1)
+                columna_maquina = random.randint(0, tablero_jugador.columnas - 1)
+                if tablero_jugador.atacar_normal(fila_maquina, columna_maquina, barcos_jugador):
+                    print("¡La máquina ha acertado!")
+                else:
+                    print("¡La máquina ha fallado!")
+                # Segundo ataque
+                fila_maquina_segundo = None
+                columna_maquina_segundo = None
+                if fila_maquina - 1 >= 0:
+                    fila_maquina_segundo = fila_maquina - 1
+                else:
+                    fila_maquina_segundo = fila_maquina + 1
+                columna_maquina_segundo = columna_maquina
+                if (fila_maquina_segundo, columna_maquina_segundo) not in tablero_jugador.coordenadas_atacadas:
+                    if tablero_jugador.atacar_normal(fila_maquina_segundo, columna_maquina_segundo, barcos_jugador):
+                        print("¡La máquina ha acertado de nuevo!")
+                    else:
+                        print("¡La máquina ha fallado de nuevo!")
+                        break
+                else:
+                    print("¡La máquina ha repetido coordenadas!")
+                    break
 
-        barco = Barco(tamaño_barcos, orientacion, fila, columna)
-        barcos_maquina.append(barco)
-
-        for i in range(tamaño_barcos):
-            if orientacion == 0:  # Horizontal
-                tablero_maquina.casillas[fila][columna + i] = barco
-            else:  # Vertical
-                tablero_maquina.casillas[fila + i][columna] = barco
-
-    # Visualizar el tablero con los encabezados y el nombre del jugador
-    print(f"Tablero de la máquina:")
-    encabezado_columnas = '   ' + ' '.join(str(i + 1) for i in range(tablero_maquina.columnas))
-    print(encabezado_columnas)
-    for i, fila in enumerate(tablero_maquina.casillas):
-        if mostrar_barcos:
-            print(chr(65 + i), ' '.join(['B' if casilla else '.' for casilla in fila]))
-        else:
-            print(chr(65 + i), ' '.join(['.' for _ in fila]))  # Mostrar solo puntos para esconder los barcos
-
-    return tablero_maquina, barcos_maquina
-  
-
-
+def jugar_dificil(dificultad, nombreId):
+        tablero_jugador, tablero_rival = Tablero(0, 0).generar_tableros(dificultad)
+        barcos_jugador = Barco.crear_barcos(5, 3, "horizontal", tablero_jugador.filas, tablero_jugador.columnas)
+        barcos_rival = Barco.crear_barcos(5, 3, "horizontal", tablero_rival.filas, tablero_rival.columnas)
+        tablero_jugador.cargar_barcos(barcos_jugador)
+        tablero_rival.cargar_barcos(barcos_rival, mostrar_barcos=True)
+        while True:
+            print(f"Tablero del jugador: {nombreId}")
+            tablero_jugador.imprimir_tablero_con_letras()
+            print("Tablero del rival:")
+            tablero_rival.imprimir_tablero_con_letras()
+            while True:
+                fila = int(input("Ingrese la fila: "))
+                columna = int(input("Ingrese la columna: "))
+                if tablero_rival.atacar_dificil(fila, columna, barcos_rival):
+                    print("¡Disparo acertado!")
+                    if not barcos_rival:
+                        print("¡Has ganado!")
+                        
+                        return
+                else:
+                    print("¡Disparo fallido!")
+                    break
+            # Turno de la máquina
+            while True:
+                fila_maquina = random.randint(0, tablero_jugador.filas - 1)
+                columna_maquina = random.randint(0, tablero_jugador.columnas - 1)
+                if (fila_maquina, columna_maquina) not in tablero_jugador.coordenadas_atacadas:
+                    break
+            if tablero_jugador.atacar_dificil(fila_maquina, columna_maquina, barcos_jugador):
+                print("¡La máquina ha acertado!")
+                # Disparos inteligentes
+                fila_maquina_base = fila_maquina
+                columna_maquina_base = columna_maquina
+                for _ in range(3):
+                    direcciones = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+                    random.shuffle(direcciones)
+                    for direccion in direcciones:
+                        fila_maquina_nueva = fila_maquina_base + direccion[0]
+                        columna_maquina_nueva = columna_maquina_base + direccion[1]
+                        if (fila_maquina_nueva, columna_maquina_nueva) not in tablero_jugador.coordenadas_atacadas and 0 <= fila_maquina_nueva < tablero_jugador.filas and 0 <= columna_maquina_nueva < tablero_jugador.columnas:
+                            if tablero_jugador.atacar_dificil(fila_maquina_nueva, columna_maquina_nueva, barcos_jugador):
+                                print("¡La máquina ha acertado de nuevo!")
+                                fila_maquina_base = fila_maquina_nueva
+                                columna_maquina_base = columna_maquina_nueva
+                                break
+                            else:
+                                print("¡La máquina ha fallado de nuevo!")
+                                break
+            else:
+                print("¡La máquina ha fallado!")
