@@ -16,7 +16,6 @@ def MenuHundirFlota():
             elif opcion == 2:
                 print(f"Has seleccionado la opcion {opcion} Salir")
                 print("Has salido  del juego")
-
                 exit()
             else:
                 print(f"La opcion {opcion} que has elegido no es valida")

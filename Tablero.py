@@ -130,7 +130,39 @@ def mostrar_ventana_perdedor_easy():
         label_imagen = tk.Label(ventana, image=imagen_perdedor)
         label_imagen.pack()
         ventana.mainloop()
-        
+
+def mostrar_ventana_ganador_normal():
+        ventana = tk.Tk()
+        ventana.title("Enhorabuenaaa ¡Has ganadoooo!")
+        imagen_ganador = tk.PhotoImage(file="HundirLaFlota\Imagenes\WinNormal.png")
+        label_imagen = tk.Label(ventana,image=imagen_ganador)
+        label_imagen.pack()
+        ventana.mainloop()
+
+def mostrar_ventana_perdedor_normal():
+        ventana = tk.Tk()
+        ventana.title("¡Has perdido!")
+        imagen_perdedor = tk.PhotoImage(file="HundirLaFlota\Imagenes\Losser.png")
+        label_imagen = tk.Label(ventana, image=imagen_perdedor)
+        label_imagen.pack()
+        ventana.mainloop()  
+
+def mostrar_ventana_ganador_dificil():
+        ventana = tk.Tk()
+        ventana.title("Enhorabuenaaa ¡Has conseguidoo ganarrr!")
+        imagen_ganador = tk.PhotoImage(file="HundirLaFlota\Imagenes\YouWin.jpeg")
+        label_imagen = tk.Label(ventana,image=imagen_ganador)
+        label_imagen.pack()
+        ventana.mainloop()
+
+def mostrar_ventana_perdedor_dificil():
+        ventana = tk.Tk()
+        ventana.title("¡Has perdido!")
+        imagen_perdedor = tk.PhotoImage(file="HundirLaFlota\Imagenes\GameOver.png")
+        label_imagen = tk.Label(ventana, image=imagen_perdedor)
+        label_imagen.pack()
+        ventana.mainloop()
+
 
 def jugar(dificultad,nombreId):
         tablero_jugador, tablero_rival = Tablero(0, 0).generar_tableros(dificultad)
@@ -187,9 +219,11 @@ def jugar_normal(dificultad, nombreId):
                     print("¡Disparo acertado!")
                     if not barcos_rival:
                         print("¡Has ganado!")
+                        mostrar_ventana_ganador_normal()
                         return
                 else:
                     print("¡Disparo fallido!")
+
                     break
             # Turno de la máquina
             while True:
@@ -210,12 +244,19 @@ def jugar_normal(dificultad, nombreId):
                 if (fila_maquina_segundo, columna_maquina_segundo) not in tablero_jugador.coordenadas_atacadas:
                     if tablero_jugador.atacar_normal(fila_maquina_segundo, columna_maquina_segundo, barcos_jugador):
                         print("¡La máquina ha acertado de nuevo!")
+                        if not barcos_jugador:
+                            print("¡Has perdido!")
+                            mostrar_ventana_perdedor_normal()
+                            return
                     else:
                         print("¡La máquina ha fallado de nuevo!")
                         break
                 else:
                     print("¡La máquina ha repetido coordenadas!")
                     break
+
+                    
+
 
 def jugar_dificil(dificultad, nombreId):
         tablero_jugador, tablero_rival = Tablero(0, 0).generar_tableros(dificultad)
@@ -235,6 +276,7 @@ def jugar_dificil(dificultad, nombreId):
                     print("¡Disparo acertado!")
                     if not barcos_rival:
                         print("¡Has ganado!")
+                        mostrar_ventana_ganador_dificil()
                         
                         return
                 else:
@@ -263,6 +305,10 @@ def jugar_dificil(dificultad, nombreId):
                                 fila_maquina_base = fila_maquina_nueva
                                 columna_maquina_base = columna_maquina_nueva
                                 break
+                            if not barcos_jugador:
+                                print("¡Has perdido!")
+                                mostrar_ventana_perdedor_dificil()
+                                return
                             else:
                                 print("¡La máquina ha fallado de nuevo!")
                                 break
